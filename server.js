@@ -1,35 +1,38 @@
-
 const express = require('express');
+const session = require('express-session');
 const cors = require('cors');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
+const sequelize = require('./config/database');
+const AuthRoutes = require('./routes/AuthRoutes');
+const UserRoutes = require('./routes/UserRoutes');
 
-
-dotenv.config();
-
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
+app.use(express.json());
+app.use(cors({
+    credentials: true,
+    origin: 'http://localhost:3000'
+}));
+app.use(session({
+    secret: process.env.SECRET_KEY,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false, //ini cookie nya gua gangerti deh nanti mo di nyalain atau matiin
+      maxAge: 1000 * 60 * 60 * 24, // 1 hari
+    },
+}));
 
-app.use(express.json()); 
-app.use(cors());
-app.use(morgan('dev')); 
+app.use('/auth', AuthRoutes);
+app.use('/api', UserRoutes);
 
-
-app.get('/', (req, res) => {
-    res.json({ message: 'tesing work' });
+sequelize.sync({ alter: true }).then(() => {
+    console.log("database siap");
 });
 
-
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
+app.listen(5000, () => {
+    console.log("port 5000");
 });
 
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
-module.exports = app;
