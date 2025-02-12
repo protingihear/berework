@@ -11,6 +11,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
     try {
+        console.log("Session Data sekarang:", req.session);
         const user = await User.findByPk(req.session.user.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);

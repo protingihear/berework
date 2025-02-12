@@ -14,7 +14,7 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  try {
+try {
         const { username, password } = req.body;
         console.log("Login request received for:", username);
         
@@ -34,9 +34,10 @@ exports.login = async (req, res) => {
         req.session.username = user.username;
         req.session.role = user.role;
         
-        // Debugging: Cek apakah session tersimpan
+        // Debugging
         console.log("Session after login:", req.session);
-        console.log("Cookies sent:", req.header.cookie);
+        console.log("Cookies after login:", req.cookies);  // Cek cookies
+        console.log("Cookies sent:", req.get("Cookie")); // Cek cookies dari request
 
         res.json({ message: "Login successful", user });
     } catch (error) {
