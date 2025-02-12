@@ -5,6 +5,7 @@ const sequelize = require('./config/database');
 const AuthRoutes = require('./routes/AuthRoutes');
 const UserRoutes = require('./routes/UserRoutes');
 const MySQLStore = require('express-mysql-session')(session);
+const PORT = process.env.PORT || 5000;
 
 require('dotenv').config();
 
@@ -41,7 +42,7 @@ sequelize.sync({ alter: true }).then(() => {
     console.log("database siap");
 });
 
-app.listen(5000, () => {
-    console.log("port 5000");
+app.listen(PORT, () => {
+    console.log(`Server di port ${PORT}`);
 });
 
