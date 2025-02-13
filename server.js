@@ -4,7 +4,7 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const AuthRoutes = require('./routes/AuthRoutes');
 const UserRoutes = require('./routes/UserRoutes');
-
+const kategoriRoutes = require('./routes/categoryRoutes');
 const beritaRoutes = require("./routes/beritaRoutes");
 const MySQLStore = require('express-mysql-session')(session);
 const PORT = process.env.PORT || 5000;
@@ -44,6 +44,7 @@ app.use(session({
 app.use('/auth', AuthRoutes);
 app.use('/api', UserRoutes);
 app.use("/api/berita", beritaRoutes);
+app.use('/', kategoriRoutes);
 //force buat hapus db
 //alter buat alter
 //kalo salah atibure atau apa harus di force dulu buat overwirte db nya atau edit sana nya
