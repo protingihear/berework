@@ -13,15 +13,12 @@ router.get("/api/categories/:id/progress", categoryController.getCategoryProgres
 router.post("/api/categories", categoryController.createCategory);
 
 
-// Route untuk menambahkan subkategori ke kategori tertentu
 router.post('/api/categories/:categoryId/subcategories', subcategoryController.createSubcategory);
 router.get('/api/categories/:categoryId/subcategories', subcategoryController.getSubcategoriesByCategory);
 
 router.put("/api/subcategories/:id/status", categoryController.updateSubCategoryStatus);
-// ✅ Ambil kategori dengan progres berdasarkan user
 router.get("/api/categories/:id/progress", categoryController.getCategoryProgress);
 
-// ✅ Update status subkategori berdasarkan user
 router.put("/api/subcategories/:id/status", categoryController.updateSubCategoryStatus);
 
 module.exports = router;
