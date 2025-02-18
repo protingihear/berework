@@ -35,9 +35,12 @@ try {
         req.session.role = user.role;
         
         // Debugging
-        console.log("Session after login:", req.session);
+        // console.log("Raw Cookie Header:", req.headers.cookie);
+        // console.log("Session after login:", req.session);
         console.log("Cookies after login:", req.cookies);  // Cek cookies
-        console.log("Cookies sent:", req.get("Cookie")); // Cek cookies dari request
+        console.log("Request headers (contains cookies?):", req.get("Cookie")); // Cek cookies dari request
+        console.log(req.session);
+        // console.log("Set-Cookie header:", res.getHeaders()["set-cookie"]); 
 
         res.json({ message: "Login successful", user });
     } catch (error) {
@@ -45,3 +48,23 @@ try {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+exports.logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) return res.status(500).json({ message: "Logout failed" });
+        res.clearCookie('tt');
+        res.json({ message: "Logged out successfully" });
+    });
+};
+
+
+exports.getSession = (req, res) => {
+    console.log("Session Check:", req.session);
+    console.log("Cookies:", req.cookies);
+
+    res.json({ 
+        session: req.session,
+        cookies: req.cookies 
+    });
+};
+

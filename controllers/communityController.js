@@ -8,7 +8,7 @@ const CommunityLike = require("../models/CommunityLike");
 exports.createCommunity = async (req, res) => {
  try {
         const { name, description } = req.body;
-        const creatorId = req.user.id; // Sekarang req.user.id ada karena middleware diperbaiki
+        const creatorId = req.session.userId; // Sekarang req.user.id ada karena middleware diperbaiki
 
         const community = await Community.create({ name, description, creatorId });
 
