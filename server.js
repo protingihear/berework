@@ -56,7 +56,7 @@ app.use('/',communityRoutes)
 //force buat hapus db
 //alter buat alter
 //kalo salah atibure atau apa harus di force dulu buat overwirte db nya atau edit sana nya
-sequelize.sync({ alter: true }).then(() => {
+sequelize.sync({ force: true }).then(() => {
     console.log("database siap");
 });
 

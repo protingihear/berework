@@ -2,14 +2,22 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 
 exports.register = async (req, res) => {
-    try {
-        const { firstname, lastname, email, username, password, role } = req.body;
-        const user = await User.create({ firstname, lastname, email, username, password, role });
-        res.status(201).json({ message: 'User registered', user });
-	console.log("hasil"+firstname);
-    } catch (error) {
-        res.status(500).json({ message: 'Error registering user', error });
+        try {
+        const { firstname, lastname, email, username, password, role, bio, gender } = req.body;
 
+        // Jika file gambar ada, konversi ke base64, jika tidak, biarkan null
+        const Image = req.file ? req.file.buffer.toString("base64") : null;
+
+        const user = await User.create({ firstname, lastname, email, username, password, bio, role, gender, Image });
+
+        res.status(201).json({ message: 'User registered', user });
+
+    } catch (error) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: "Ukuran file terlalu besar! Maksimum 2MB." });
+        }
+
+        res.status(500).json({ message: 'Error registering user', error: error.message });
     }
 };
 
