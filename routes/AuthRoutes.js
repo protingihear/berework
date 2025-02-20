@@ -8,6 +8,5 @@ router.post('/register',upload.single("Image"),
 AuthController.register);
 router.post('/login', AuthController.login);
 router.get('/session', AuthController.getSession);
-router.post('/logout', AuthController.logout);
 
 module.exports = router;
