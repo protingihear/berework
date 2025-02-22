@@ -3,7 +3,6 @@ const UserController = require('../controllers/UserController');
 const authMiddleware = require('../middleware/authMiddleware');
 const upload = require('../middleware/upload');
 
-const upload = require("../middleware/upload");
 const router = express.Router();
 
 router.get('/users', authMiddleware, UserController.getAllUsers);
