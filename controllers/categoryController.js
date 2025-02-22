@@ -48,32 +48,43 @@ exports.getCategoryById = async (req, res) => {
 exports.getCategoryProgress = async (req, res) => {
     try {
         const { id } = req.params; // ID kategori
-        const { userId } = req.query; // User ID dari query params
+        const { userId } = req.query; // ID pengguna dari query params
 
         if (!userId) {
             return res.status(400).json({ message: "User ID is required" });
         }
 
-        // Ambil semua subkategori dalam kategori ini
-        const subcategories = await SubCategory.findAll({ where: { categoryId: id } });
+        // Ambil semua subkategori dalam kategori tertentu
+        const subcategories = await SubCategory.findAll({
+            where: { categoryId: id },
+        });
 
         if (!subcategories.length) {
             return res.status(404).json({ message: "No subcategories found in this category" });
         }
 
-        // Ambil progres subkategori berdasarkan user
+        // Ambil progres user hanya untuk subkategori dalam kategori ini
+        const subCategoryIds = subcategories.map(sub => sub.id);
         const userProgress = await UserSubCategoryProgress.findAll({
-            where: { userId },
+            where: { userId, subCategoryId: subCategoryIds },
         });
 
-        // Hitung progres
-        const totalSubcategories = subcategories.length;
+        // Hitung berapa banyak subkategori yang sudah selesai
         const completedSubcategories = userProgress.filter(sub => sub.done).length;
+        const totalSubcategories = subcategories.length;
 
+        // Hitung progres sebagai persentase
         const progress = totalSubcategories > 0 ? (completedSubcategories / totalSubcategories) * 100 : 0;
 
-        res.json({ categoryId: id, progress, subcategories });
+        res.json({
+            categoryId: id,
+            userId,
+            progress: progress ,// Biarkan hasil dalam 2 desimal
+            completedSubcategories,
+            totalSubcategories,
+        });
     } catch (error) {
+        console.error("Error fetching category progress:", error);
         res.status(500).json({ message: "Error fetching category progress", error });
     }
 };
@@ -81,14 +92,20 @@ exports.getCategoryProgress = async (req, res) => {
 // ✅ Update status subkategori berdasarkan user
 exports.updateSubCategoryStatus = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // ID Subkategori
         const { done, userId } = req.body;
 
         if (!userId) {
             return res.status(400).json({ message: "User ID is required" });
         }
 
-        // Cek apakah user sudah memiliki progres di subkategori ini
+        // Periksa apakah subkategori ini ada dalam database
+        const subCategory = await SubCategory.findByPk(id);
+        if (!subCategory) {
+            return res.status(404).json({ message: "Subcategory not found" });
+        }
+
+        // Cari progres user untuk subkategori ini
         let userProgress = await UserSubCategoryProgress.findOne({
             where: { userId, subCategoryId: id },
         });
@@ -108,6 +125,7 @@ exports.updateSubCategoryStatus = async (req, res) => {
 
         res.json({ message: "SubCategory progress updated", userProgress });
     } catch (error) {
+        console.error("Error updating subcategory progress:", error);
         res.status(500).json({ message: "Error updating subcategory progress", error });
     }
 };
