@@ -6,11 +6,12 @@ const CommunityLike = require("../models/CommunityLike");
 
 // ✅ Buat komunitas
 exports.createCommunity = async (req, res) => {
- try {
+    try {
         const { name, description } = req.body;
-        const creatorId = req.session.userId; // Sekarang req.user.id ada karena middleware diperbaiki
+        const foto = req.file ? req.file.buffer.toString("base64") : null; // Konversi file ke Base64
+        const creatorId = req.session.userId; // Gunakan session untuk mendapatkan userId
 
-        const community = await Community.create({ name, description, creatorId });
+        const community = await Community.create({ name, description, creatorId, foto });
 
         res.status(201).json({ message: "Community created", community });
     } catch (error) {
@@ -22,8 +23,9 @@ exports.createCommunity = async (req, res) => {
 exports.editCommunity = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, userId } = req.body;
-        
+        const { name, description } = req.body;
+        const userId = req.session.userId; // Gunakan session
+
         const community = await Community.findByPk(id);
         if (!community) return res.status(404).json({ message: "Community not found" });
 
@@ -44,20 +46,42 @@ exports.editCommunity = async (req, res) => {
 // ✅ Join komunitas
 exports.joinCommunity = async (req, res) => {
     try {
-        const { userId, communityId } = req.body;
+        const userId = req.session.userId; // Gunakan session
+        const communityId = req.params.id; // Ambil communityId dari URL params
 
+        if (!userId) {
+            return res.status(400).json({ message: "User ID tidak ditemukan" });
+        }
+        if (!communityId) {
+            return res.status(400).json({ message: "Community ID tidak ditemukan" });
+        }
+
+        const community = await Community.findByPk(communityId);
+        if (!community) {
+            return res.status(404).json({ message: "Community tidak ditemukan" });
+        }
+
+        // Cek apakah user sudah bergabung sebelumnya
+        const existingMember = await CommunityMember.findOne({ where: { userId, communityId } });
+        if (existingMember) {
+            return res.status(400).json({ message: "Anda sudah bergabung dalam komunitas ini" });
+        }
+
+        // Tambahkan keanggotaannya
         await CommunityMember.create({ userId, communityId });
 
-        res.json({ message: "Joined community successfully" });
+        res.json({ message: "Berhasil bergabung dengan komunitas" });
     } catch (error) {
-        res.status(500).json({ message: "Error joining community", error });
+        console.error("Error saat join komunitas:", error);
+        res.status(500).json({ message: "Terjadi kesalahan saat join komunitas", error });
     }
 };
 
 // ✅ Post di komunitas
 exports.createPost = async (req, res) => {
     try {
-        const { userId, communityId, content } = req.body;
+        const { communityId, content } = req.body;
+        const userId = req.session.userId; // Gunakan session untuk userId
 
         const post = await CommunityPost.create({ userId, communityId, content });
 
@@ -70,7 +94,8 @@ exports.createPost = async (req, res) => {
 // ✅ Reply ke post atau reply lain
 exports.createReply = async (req, res) => {
     try {
-        const { userId, postId, replyId, content } = req.body;
+        const { postId, replyId, content } = req.body;
+        const userId = req.session.userId; // Gunakan session untuk userId
 
         const reply = await CommunityReply.create({ userId, postId, replyId, content });
 
@@ -83,7 +108,8 @@ exports.createReply = async (req, res) => {
 // ✅ Like post atau reply
 exports.likeContent = async (req, res) => {
     try {
-        const { userId, postId, replyId } = req.body;
+        const { postId, replyId } = req.body;
+        const userId = req.session.userId; // Gunakan session untuk userId
 
         await CommunityLike.create({ userId, postId, replyId });
 
@@ -92,6 +118,8 @@ exports.likeContent = async (req, res) => {
         res.status(500).json({ message: "Error liking content", error });
     }
 };
+
+// ✅ Ambil semua komunitas
 exports.getCommunities = async (req, res) => {
     try {
         const communities = await Community.findAll();
@@ -101,12 +129,12 @@ exports.getCommunities = async (req, res) => {
     }
 };
 
-// ✅ Fungsi untuk mendapatkan detail komunitas berdasarkan ID
+// ✅ Detail komunitas
 exports.getCommunityById = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.user.id; // Pastikan middleware auth telah menambahkan userId
-        
+        const userId = req.session.userId; // Gunakan session
+
         const community = await Community.findByPk(id, {
             attributes: ["id", "name", "description"],
         });
@@ -116,7 +144,7 @@ exports.getCommunityById = async (req, res) => {
         }
 
         // Cek apakah user sudah join komunitas
-        const isMember = await UserCommunity.findOne({
+        const isMember = await CommunityMember.findOne({
             where: { userId, communityId: id }
         });
 
@@ -128,9 +156,9 @@ exports.getCommunityById = async (req, res) => {
         }
 
         // Jika sudah join, fetch posts dan likes
-        const posts = await Post.findAll({
+        const posts = await CommunityPost.findAll({
             where: { communityId: id },
-            include: [{ model: Like, as: "likes" }]
+            include: [{ model: CommunityLike, as: "likes" }]
         });
 
         res.json({ community, posts });
@@ -138,11 +166,12 @@ exports.getCommunityById = async (req, res) => {
         res.status(500).json({ message: "Error fetching community", error });
     }
 };
-// ✅ Fungsi untuk keluar dari komunitas
+
+// ✅ Keluar dari komunitas
 exports.leaveCommunity = async (req, res) => {
     try {
         const { id } = req.params; // ID komunitas
-        const userId = req.user.id; // ID pengguna dari session/auth
+        const userId = req.session.userId; // Gunakan session untuk userId
 
         const membership = await CommunityMember.findOne({ where: { userId, communityId: id } });
 
@@ -156,4 +185,31 @@ exports.leaveCommunity = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Error leaving community", error });
     }
+    
 };
+
+exports.getJoinedCommunities = async (req, res) => {
+    try {
+        const userId = req.session.userId; // Pastikan userId diambil dari sesi autentikasi
+
+        if (!userId) {
+            return res.status(401).json({ message: "User ID tidak ditemukan, silakan login" });
+        }
+
+        // Cari semua komunitas yang diikuti oleh user
+        const joinedCommunities = await Community.findAll({
+            include: {
+                model: CommunityMember,
+                as: "members",  // Sesuai dengan relasi yang didefinisikan di atas
+                where: { userId },
+                attributes: []  // Hanya mengambil data Community, bukan CommunityMember
+            }
+        });
+
+        res.json({ message: "Daftar komunitas yang diikuti", joinedCommunities });
+    } catch (error) {
+        console.error("Error fetching joined communities:", error);
+        res.status(500).json({ message: "Error fetching joined communities", error });
+    }
+};
+

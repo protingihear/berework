@@ -3,9 +3,10 @@ const router = express.Router();
 const communityController = require("../controllers/communityController");
 const authMiddleware = require("../middleware/authMiddleware");
 
+const upload = require("../middleware/upload");
 // ✅ Buat komunitas baru
 //router.post("/api/communities", communityController.createCommunity);
-router.post("/api/communities", authMiddleware, communityController.createCommunity);
+router.post("/api/communities",upload.single("foto"), authMiddleware, communityController.createCommunity);
 // ✅ Edit komunitas
 router.put("/api/communities/:id", communityController.editCommunity);
 
@@ -29,5 +30,6 @@ router.post("/api/communities/:id/posts/:postId/replies", communityController.cr
 
 // ✅ Like postingan atau balasan
 router.post("/api/communities/:id/posts/:postId/likes", communityController.likeContent);
+router.get("/api/community/joined", communityController.getJoinedCommunities);
 
 module.exports = router;

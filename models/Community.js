@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const CommunityMember = require("./CommunityMember");
 
 const Community = sequelize.define("Community", {
     name: {
@@ -14,7 +15,16 @@ const Community = sequelize.define("Community", {
     creatorId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-    }
+    },
+
+  foto: {
+    type: DataTypes.TEXT, // ini base64
+    allowNull: true,
+  },
+    
 });
+
+Community.hasMany(CommunityMember, { foreignKey: "communityId", as: "members" });
+CommunityMember.belongsTo(Community, { foreignKey: "communityId", as: "community" });
 
 module.exports = Community;

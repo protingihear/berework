@@ -4,6 +4,6 @@ module.exports = (req, res, next) => {
         return res.status(401).json({ message: "Unauthorized" });
     }
     
-    req.user = req.session.username; // Simpan user ke request
+    req.user = { id: req.session.userId, username: req.session.username };
     next();
 };
