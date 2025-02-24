@@ -213,3 +213,85 @@ exports.getJoinedCommunities = async (req, res) => {
     }
 };
 
+exports.getCommunityReplies = async (req, res) => {
+    try {
+        const { communityId } = req.params; // Ambil ID komunitas dari parameter URL
+
+        // Cek apakah komunitas ada
+        const community = await Community.findByPk(communityId);
+        if (!community) {
+            return res.status(404).json({ message: "Community not found" });
+        }
+
+        // Ambil semua post di komunitas tersebut
+        const posts = await CommunityPost.findAll({
+            where: { communityId },
+            attributes: ["id", "content", "userId", "createdAt"],
+            include: [
+                {
+                    model: CommunityReply,
+                    as: "replies",
+                    attributes: ["id", "content", "userId", "postId", "replyId", "createdAt"],
+                    include: [
+                        {
+                            model: CommunityReply,
+                            as: "nestedReplies",
+                            attributes: ["id", "content", "userId", "postId", "replyId", "createdAt"]
+                        }
+                    ]
+                }
+            ]
+        });
+
+        res.json({ message: "Replies for the community posts", posts });
+    } catch (error) {
+        console.error("Error fetching community replies:", error);
+        res.status(500).json({ message: "Error fetching community replies", error });
+    }
+};
+
+exports.getCommunityPosts = async (req, res) => {
+    try {
+        const { id } = req.params; // ID komunitas dari URL
+        const userId = req.session.userId; // User yang sedang login
+
+        // Cek apakah komunitas ada
+        const community = await Community.findByPk(id);
+        if (!community) {
+            return res.status(404).json({ message: "Community not found" });
+        }
+
+        // Cek apakah user sudah join komunitas
+        const isMember = await CommunityMember.findOne({
+            where: { userId, communityId: id }
+        });
+
+        if (!isMember) {
+            return res.status(403).json({ message: "You must join the community to see posts" });
+        }
+
+        // Ambil semua post dari komunitas beserta like dan reply
+        const posts = await CommunityPost.findAll({
+            where: { communityId: id },
+            attributes: ["id", "content", "userId", "createdAt"],
+            include: [
+                {
+                    model: CommunityReply,
+                    as: "replies",
+                    attributes: ["id", "content", "userId", "postId", "replyId", "createdAt"]
+                },
+                {
+                    model: CommunityLike,
+                    as: "likes",
+                    attributes: ["id", "userId"]
+                }
+            ],
+            order: [["createdAt", "DESC"]] // Urutkan dari terbaru
+        });
+
+        res.json({ message: "Community posts retrieved", posts });
+    } catch (error) {
+        console.error("Error fetching community posts:", error);
+        res.status(500).json({ message: "Error fetching community posts", error });
+    }
+};

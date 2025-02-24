@@ -27,7 +27,7 @@ const sessionStore = new MySQLStore(dbOptions);
 app.use(express.json());
 app.use(cors({
     credentials: true,
-    origin: ['http://localhost:57472', 'https://berework-production.up.railway.app', "http://10.0.2.2"],
+    origin: ['http://localhost:50498', 'https://berework-production.up.railway.app', "http://10.0.2.2"],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
