@@ -41,7 +41,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production' ? true : false, // Set to false for localhost
+        secure:  false, // Set to false for localhost
         httpOnly: false,
         sameSite: 'lax', // Allows cross-origin cookies in most cases
         maxAge: 1000 * 60 * 60 * 24 // 1 day
