@@ -41,8 +41,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure:  false, // Set to false for localhost
-        httpOnly: false,
+        secure:  true, // Set to false for localhost
+        httpOnly: true,
         sameSite: 'lax', // Allows cross-origin cookies in most cases
         maxAge: 1000 * 60 * 60 * 24 // 1 day
 
