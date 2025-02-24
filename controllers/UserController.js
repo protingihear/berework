@@ -121,4 +121,35 @@ exports.logout = (req, res) => {
         res.clearCookie("session_id");
         res.json({ message: "Logged out successfully" });
     });
+
 };
+exports.activateUser = async (req, res) => {
+    try {
+        if (!req.session.userId || !req.cookies.session_id) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const { username } = req.body;
+
+        if (!username) {
+            return res.status(400).json({ message: "Username is required" });
+        }
+
+        const user = await User.findOne({ where: { username } });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.akunaktif) {
+            return res.status(400).json({ message: "User is already active" });
+        }
+
+        await User.update({ akunaktif: true }, { where: { username } });
+
+        res.json({ message: `User ${username} has been activated successfully` });
+    } catch (error) {
+        res.status(500).json({ message: "Error activating user", error: error.message });
+    }
+};
+

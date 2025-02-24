@@ -1,14 +1,17 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
-
 exports.register = async (req, res) => {
-        try {
+    try {
         const { firstname, lastname, email, username, password, role, bio, gender } = req.body;
 
         // Jika file gambar ada, konversi ke base64, jika tidak, biarkan null
         const Image = req.file ? req.file.buffer.toString("base64") : null;
+        const sertif = req.file ? req.file.buffer.toString("base64") : null;
 
-        const user = await User.create({ firstname, lastname, email, username, password, bio, role, gender, Image });
+        // Jika role adalah 'admin', akunaktif = false, selain itu true
+        const akunaktif = role === 'admin' ? false : true;
+
+        const user = await User.create({ firstname, lastname, email, username, password, bio, role, gender, Image, sertif, akunaktif });
 
         res.status(201).json({ message: 'User registered', user });
 
@@ -20,7 +23,6 @@ exports.register = async (req, res) => {
         res.status(500).json({ message: 'Error registering user', error: error.message });
     }
 };
-
 exports.login = async (req, res) => {
 try {
         const { username, password } = req.body;
