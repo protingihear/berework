@@ -42,6 +42,21 @@ CommunityPost.belongsToMany(User, { through: CommunityLike, foreignKey: "postId"
 User.belongsToMany(CommunityReply, { through: CommunityLike, foreignKey: "userId", as: "likedReplies" });
 CommunityReply.belongsToMany(User, { through: CommunityLike, foreignKey: "replyId", as: "likedBy" });
 
+
+// 🔹 Hubungan antar model
+User.hasMany(CommunityPost, { foreignKey: "userId", as: "posts" });
+CommunityPost.belongsTo(User, { foreignKey: "userId", as: "author" });
+
+User.hasMany(CommunityReply, { foreignKey: "userId", as: "replies" });
+CommunityReply.belongsTo(User, { foreignKey: "userId", as: "author" });
+
+CommunityPost.hasMany(CommunityReply, { foreignKey: "postId", as: "replies" });
+CommunityReply.belongsTo(CommunityPost, { foreignKey: "postId", as: "post" });
+
+CommunityPost.hasMany(CommunityLike, { foreignKey: "postId", as: "likes" });
+CommunityLike.belongsTo(CommunityPost, { foreignKey: "postId", as: "post" });
+
+
 const syncDatabase = async () => {
     try {
         await sequelize.sync(); // Hapus alter: true jika di produksi

@@ -4,6 +4,7 @@ const CommunityPost = require("../models/CommunityPost");
 const CommunityReply = require("../models/CommunityReply");
 const CommunityLike = require("../models/CommunityLike");
 
+const User = require("../models/user");
 // ✅ Buat komunitas
 exports.createCommunity = async (req, res) => {
     try {
@@ -95,7 +96,29 @@ exports.createPost = async (req, res) => {
 exports.createReply = async (req, res) => {
     try {
         const { postId, replyId, content } = req.body;
-        const userId = req.session.userId; // Gunakan session untuk userId
+        const userId = req.session.userId;
+
+        if (!postId && !replyId) {
+            return res.status(400).json({ message: "postId atau replyId harus diisi" });
+        }
+
+        if (replyId) {
+            // Cek apakah reply yang akan dijawab itu benar-benar ada
+            const parentReply = await CommunityReply.findByPk(replyId);
+            if (!parentReply) {
+                return res.status(404).json({ message: "Reply yang ingin dibalas tidak ditemukan" });
+            }
+            // Pastikan replyId berasal dari post yang sama
+            if (parentReply.postId !== postId) {
+                return res.status(400).json({ message: "Reply harus berasal dari post yang sama" });
+            }
+        } else {
+            // Jika ini adalah reply pertama, cek apakah post-nya ada
+            const post = await CommunityPost.findByPk(postId);
+            if (!post) {
+                return res.status(404).json({ message: "Post tidak ditemukan" });
+            }
+        }
 
         const reply = await CommunityReply.create({ userId, postId, replyId, content });
 
@@ -250,48 +273,50 @@ exports.getCommunityReplies = async (req, res) => {
     }
 };
 
+
 exports.getCommunityPosts = async (req, res) => {
     try {
         const { id } = req.params; // ID komunitas dari URL
-        const userId = req.session.userId; // User yang sedang login
 
-        // Cek apakah komunitas ada
-        const community = await Community.findByPk(id);
-        if (!community) {
-            return res.status(404).json({ message: "Community not found" });
-        }
-
-        // Cek apakah user sudah join komunitas
-        const isMember = await CommunityMember.findOne({
-            where: { userId, communityId: id }
-        });
-
-        if (!isMember) {
-            return res.status(403).json({ message: "You must join the community to see posts" });
-        }
-
-        // Ambil semua post dari komunitas beserta like dan reply
+        // Ambil semua postingan dari komunitas tertentu
         const posts = await CommunityPost.findAll({
             where: { communityId: id },
-            attributes: ["id", "content", "userId", "createdAt"],
             include: [
+                {
+                    model: User,
+                    as: "author",
+                    attributes: ["id", "name", "email"] // Info user yang membuat post
+                },
                 {
                     model: CommunityReply,
                     as: "replies",
-                    attributes: ["id", "content", "userId", "postId", "replyId", "createdAt"]
+                    attributes: ["id", "content", "userId", "createdAt"],
+                    include: [
+                        {
+                            model: User,
+                            as: "author",
+                            attributes: ["id", "name"]
+                        }
+                    ]
                 },
                 {
                     model: CommunityLike,
                     as: "likes",
-                    attributes: ["id", "userId"]
+                    attributes: ["id", "userId"] // Like pada postingan
                 }
             ],
-            order: [["createdAt", "DESC"]] // Urutkan dari terbaru
+            order: [["createdAt", "DESC"]] // Urutkan dari postingan terbaru
         });
 
-        res.json({ message: "Community posts retrieved", posts });
+        res.status(200).json({
+            message: "Postingan komunitas berhasil diambil",
+            posts
+        });
     } catch (error) {
-        console.error("Error fetching community posts:", error);
-        res.status(500).json({ message: "Error fetching community posts", error });
+        console.error(error);
+        res.status(500).json({
+            message: "Terjadi kesalahan saat mengambil postingan komunitas",
+            error: error.message
+        });
     }
 };

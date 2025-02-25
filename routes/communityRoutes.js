@@ -39,5 +39,5 @@ router.get("/api/communities/:id/replies", communityController.getCommunityRepli
 
 // ✅ Like postingan atau balasan (wajib login)
 router.post("/api/communities/:id/posts/:postId/likes", authMiddleware, communityController.likeContent);
-
+//router.get("/api/communities/:id/posts", communityController.getCommunityPosts);
 module.exports = router;

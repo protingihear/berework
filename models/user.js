@@ -39,6 +39,6 @@ const User = sequelize.define('User', {
         }
     }
 });
-
+User.hasMany(require("./CommunityPost"), { foreignKey: "userId", as: "posts" });
 module.exports = User;
 
