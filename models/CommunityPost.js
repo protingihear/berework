@@ -1,9 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const User = require("./user");
+const Community = require("./Community");
 
-const CommunityReply = require("./CommunityReply");
-const CommunityLike = require("./CommunityLike");
-// const User = require("./user");
 const CommunityPost = sequelize.define("CommunityPost", {
     id: {
         type: DataTypes.INTEGER,
@@ -12,11 +11,19 @@ const CommunityPost = sequelize.define("CommunityPost", {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: {
+            model: User,
+            key: "id"
+        }
     },
     communityId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: {
+            model: Community, // 🔹 Tambahin ini biar Sequelize paham relasinya
+            key: "id"
+        }
     },
     content: {
         type: DataTypes.TEXT,
@@ -24,7 +31,4 @@ const CommunityPost = sequelize.define("CommunityPost", {
     }
 });
 
-// 🔹 Hubungan dengan Reply
-CommunityPost.hasMany(CommunityReply, { foreignKey: "postId", as: "replies" });
-CommunityPost.hasMany(CommunityLike, { foreignKey: "postId", as: "likes" });
 module.exports = CommunityPost;

@@ -13,7 +13,7 @@ const CommunityReply = sequelize.define("CommunityReply", {
     },
     postId: {
         type: DataTypes.INTEGER,
-        allowNull: false // Harus selalu ada postId, tapi bisa null jika ini adalah nested reply
+        allowNull: true // Harus selalu ada postId, tapi bisa null jika ini adalah nested reply
     },
     replyId: {
         type: DataTypes.INTEGER,
@@ -25,8 +25,12 @@ const CommunityReply = sequelize.define("CommunityReply", {
     }
 });
 
-// 🔹 Hubungan Nested Reply (Reply ke Reply)
-CommunityReply.hasMany(CommunityReply, { foreignKey: "replyId", as: "nestedReplies" });
-CommunityReply.belongsTo(CommunityReply, { foreignKey: "replyId", as: "parentReply" });
+CommunityReply.addHook("beforeValidate", (reply) => {
+    if (!reply.postId && !reply.replyId) {
+        throw new Error("CommunityReply harus punya postId atau replyId");
+    }
+});
 
+
+// 🔹 Relationships (defined in index.js to avoid circular dependencies)
 module.exports = CommunityReply;

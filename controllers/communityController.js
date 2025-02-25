@@ -1,10 +1,4 @@
-const Community = require("../models/Community");
-const CommunityMember = require("../models/CommunityMember");
-const CommunityPost = require("../models/CommunityPost");
-const CommunityReply = require("../models/CommunityReply");
-const CommunityLike = require("../models/CommunityLike");
-
-const User = require("../models/user");
+const { Community, CommunityMember, CommunityPost, CommunityReply, CommunityLike, User } = require("../models");
 // ✅ Buat komunitas
 exports.createCommunity = async (req, res) => {
     try {
@@ -273,7 +267,6 @@ exports.getCommunityReplies = async (req, res) => {
     }
 };
 
-
 exports.getCommunityPosts = async (req, res) => {
     try {
         const { id } = req.params; // ID komunitas dari URL
@@ -284,8 +277,8 @@ exports.getCommunityPosts = async (req, res) => {
             include: [
                 {
                     model: User,
-                    as: "author",
-                    attributes: ["id", "name", "email"] // Info user yang membuat post
+                    as: "author", 
+                    attributes: ["id", "username"] // Info user yang membuat post
                 },
                 {
                     model: CommunityReply,
@@ -294,16 +287,17 @@ exports.getCommunityPosts = async (req, res) => {
                     include: [
                         {
                             model: User,
-                            as: "author",
-                            attributes: ["id", "name"]
+                            as: "author", // alias for nested User in replies
+                            attributes: ["id", "username"]
                         }
                     ]
                 },
-                {
-                    model: CommunityLike,
-                    as: "likes",
-                    attributes: ["id", "userId"] // Like pada postingan
-                }
+                //belom, malas.
+                // {
+                //     model: CommunityLike,
+                //     as: "likes",
+                //     attributes: ["id", "userId"] // Like pada postingan
+                // }
             ],
             order: [["createdAt", "DESC"]] // Urutkan dari postingan terbaru
         });
