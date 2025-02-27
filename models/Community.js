@@ -21,6 +21,7 @@ const Community = sequelize.define("Community", {
     type: DataTypes.TEXT, // ini base64
     allowNull: true,
   },
+  
     
 });
 
