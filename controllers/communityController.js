@@ -314,3 +314,38 @@ exports.getCommunityPosts = async (req, res) => {
         });
     }
 };
+// ✅ Balas postingan atau balasan lain dalam komunitas
+exports.createReply = async (req, res) => {
+    try {
+        const { content } = req.body;
+        const { id, postId } = req.params; // ID komunitas & ID post
+        const userId = req.session.userId; // Ambil userId dari sesi
+        const { replyId } = req.body; // Jika ini adalah balasan ke balasan lain
+
+        if (!content) {
+            return res.status(400).json({ message: "Konten reply tidak boleh kosong" });
+        }
+
+        // Cek apakah post yang akan dibalas benar-benar ada
+        const post = await CommunityPost.findOne({ where: { id: postId, communityId: id } });
+        if (!post) {
+            return res.status(404).json({ message: "Post tidak ditemukan dalam komunitas ini" });
+        }
+
+        if (replyId) {
+            // Cek apakah reply yang ingin dibalas ada
+            const parentReply = await CommunityReply.findByPk(replyId);
+            if (!parentReply) {
+                return res.status(404).json({ message: "Reply yang ingin dibalas tidak ditemukan" });
+            }
+        }
+
+        // Buat balasan
+        const reply = await CommunityReply.create({ userId, postId, replyId, content });
+
+        res.status(201).json({ message: "Reply berhasil dibuat", reply });
+    } catch (error) {
+        console.error("Error creating reply:", error);
+        res.status(500).json({ message: "Terjadi kesalahan saat membuat reply", error });
+    }
+};

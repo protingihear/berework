@@ -31,7 +31,7 @@ router.post("/api/communities/:id/posts", authMiddleware, communityController.cr
 // ✅ Ambil semua postingan dari suatu komunitas
 router.get("/api/communities/:id/posts", communityController.getCommunityPosts);
 
-// ✅ Balas postingan komunitas (wajib login)
+// ✅ Balas postingan atau reply lain dalam komunitas (wajib login)
 router.post("/api/communities/:id/posts/:postId/replies", authMiddleware, communityController.createReply);
 
 // ✅ Ambil semua balasan dalam komunitas
@@ -39,5 +39,5 @@ router.get("/api/communities/:id/replies", communityController.getCommunityRepli
 
 // ✅ Like postingan atau balasan (wajib login)
 router.post("/api/communities/:id/posts/:postId/likes", authMiddleware, communityController.likeContent);
-//router.get("/api/communities/:id/posts", communityController.getCommunityPosts);
+
 module.exports = router;
