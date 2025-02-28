@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const ChatRoomSchema = new mongoose.Schema({
-    name: { type: String, required: true },  // Nama room
-    participants: [{ type: String, ref: "ChatUser" }], // Samakan tipe dengan userId di ChatUser
+    name: { type: String, required: true },  
+    participants: [{ type: String, ref: "ChatUser" }],  // HARUS String, bukan ObjectId
     isGroup: { type: Boolean, default: false },
 }, { timestamps: true });
 

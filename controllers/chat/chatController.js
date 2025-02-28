@@ -53,18 +53,28 @@ exports.joinRoom = async (req, res) => {
 };
 
 // ✅ Ambil semua ruang obrolan user
-exports.getUserRooms = async (req, res) => {
-    try {
-        const userId = req.user.id; // ID dari token
+// exports.getUserRooms = async (req, res) => {
+//     try {
+//         const userId = req.user.id; // Diambil dari token autentikasi
 
-        // Ambil chat room yang memiliki user ini sebagai peserta
-        const rooms = await ChatRoom.find({ participants: userId }).populate("participants", "username");
+//         // 🔍 Debugging log
+//         console.log(`Fetching rooms for user ID: ${userId}`);
 
-        res.status(200).json(rooms);
-    } catch (error) {
-        res.status(500).json({ error: "Gagal mengambil ruang obrolan" });
-    }
-};
+//         // Tidak perlu validasi ObjectId karena userId adalah String (UUID)
+        
+//         // Ambil semua room yang memiliki user ini sebagai peserta
+//         const rooms = await ChatRoom.find({ participants: userId }).populate("participants", "username");
+
+//         if (rooms.length === 0) {
+//             return res.status(404).json({ message: "User belum bergabung di ruang obrolan mana pun." });
+//         }
+
+//         res.status(200).json(rooms);
+//     } catch (error) {
+//         console.error("❌ Error saat mengambil ruang obrolan:", error);
+//         res.status(500).json({ error: "Gagal mengambil ruang obrolan", details: error.message });
+//     }
+// };
 
 // ✅ Kirim pesan dalam ruang obrolan
 exports.sendMessage = async (req, res) => {
