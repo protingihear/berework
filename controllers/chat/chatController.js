@@ -26,6 +26,7 @@ exports.joinRoom = async (req, res) => {
     try {
         const { roomId } = req.params;
         const userId = req.user.id;
+        const username=req.user.username;
 
         // Cek apakah ID room valid
         if (!mongoose.Types.ObjectId.isValid(roomId)) {
@@ -53,28 +54,28 @@ exports.joinRoom = async (req, res) => {
 };
 
 // ✅ Ambil semua ruang obrolan user
-// exports.getUserRooms = async (req, res) => {
-//     try {
-//         const userId = req.user.id; // Diambil dari token autentikasi
+exports.getUserRooms = async (req, res) => {
+    try {
+        const userId = req.user.id; // Diambil dari token autentikasi
 
-//         // 🔍 Debugging log
-//         console.log(`Fetching rooms for user ID: ${userId}`);
+        // 🔍 Debugging log
+        console.log(`Fetching rooms for user ID: ${userId}`);
 
-//         // Tidak perlu validasi ObjectId karena userId adalah String (UUID)
+        // Tidak perlu validasi ObjectId karena userId adalah String (UUID)
         
-//         // Ambil semua room yang memiliki user ini sebagai peserta
-//         const rooms = await ChatRoom.find({ participants: userId }).populate("participants", "username");
+        // Ambil semua room yang memiliki user ini sebagai peserta
+        const rooms = await ChatRoom.find({ participants: userId }).populate("participants", "username");
 
-//         if (rooms.length === 0) {
-//             return res.status(404).json({ message: "User belum bergabung di ruang obrolan mana pun." });
-//         }
+        if (rooms.length === 0) {
+            return res.status(404).json({ message: "User belum bergabung di ruang obrolan mana pun." });
+        }
 
-//         res.status(200).json(rooms);
-//     } catch (error) {
-//         console.error("❌ Error saat mengambil ruang obrolan:", error);
-//         res.status(500).json({ error: "Gagal mengambil ruang obrolan", details: error.message });
-//     }
-// };
+        res.status(200).json(rooms);
+    } catch (error) {
+        console.error("❌ Error saat mengambil ruang obrolan:", error);
+        res.status(500).json({ error: "Gagal mengambil ruang obrolan", details: error.message });
+    }
+};
 
 // ✅ Kirim pesan dalam ruang obrolan
 exports.sendMessage = async (req, res) => {
@@ -82,6 +83,8 @@ exports.sendMessage = async (req, res) => {
         const { roomId } = req.params;
         const { message, messageType } = req.body;
         const senderId = req.user.id;
+        const username=req.user.username
+        console.log(username+"sini")
 
         // Cek apakah room ada
         const chatRoom = await ChatRoom.findById(roomId);
@@ -98,6 +101,8 @@ exports.sendMessage = async (req, res) => {
         const newMessage = new Message({
             chatRoomId: roomId,
             senderId,
+            username,
+
             message,
             messageType
         });
