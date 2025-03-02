@@ -62,24 +62,27 @@ exports.joinRoom = async (req, res) => {
 
 
 // ✅ Ambil semua ruang obrolan user
+
+
+
 // ✅ Ambil semua pengguna dalam suatu chat room
 exports.getRoomUsers = async (req, res) => {
-    try {
+      try {
         const { roomId } = req.params;
 
-        // Pastikan room ID valid
+        // Validasi ID room
         if (!mongoose.Types.ObjectId.isValid(roomId)) {
             return res.status(400).json({ error: "Invalid room ID" });
         }
 
-        // Cari chat room berdasarkan ID
-        const chatRoom = await ChatRoom.findById(roomId).populate("participants", "username email"); // Ambil username & email peserta
-
+        // Cek apakah room ada
+        const chatRoom = await ChatRoom.findById(roomId);
         if (!chatRoom) {
             return res.status(404).json({ error: "Chat room not found" });
         }
 
-        res.status(200).json({ participants: chatRoom.participants });
+        // Ambil langsung array `participants` karena isinya sudah username
+        res.status(200).json(chatRoom.username);
     } catch (error) {
         console.error("❌ Error saat mengambil pengguna dalam chat room:", error);
         res.status(500).json({ error: "Gagal mengambil pengguna", details: error.message });

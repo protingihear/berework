@@ -21,7 +21,7 @@ router.post("/api/chat/rooms/:roomId/messages", authMiddleware, chatController.s
 
 router.post("/api/chat/create-room", authMiddleware, chatController.createRoom); 
 router.get("/api/:roomId/messages", authMiddleware, chatController.getMessages);
-//router.get("/api/chat/room-users/:roomId", authMiddleware, chatController.getUserRooms); 
+router.get("/api/chat/room-users/:roomId", authMiddleware, chatController.getRoomUsers); 
 router.post("/api/chat/join-room/:roomId", authMiddleware, chatController.joinRoom); 
 module.exports = router;
 ///api/chat/room-users/:roomId
