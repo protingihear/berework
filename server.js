@@ -25,7 +25,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:50498", "https://berework-production.up.railway.app", "http://10.0.2.2"],
+        origin: ["http://localhost:59213", "https://berework-production.up.railway.app", "http://10.0.2.2"],
         methods: ["GET", "POST"],
     },
 });
@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
         const newMessage = new Message({ chatRoomId, sender, content });
         await newMessage.save();
 
-        // Kirim ke semua user di room tersebut
+        // Kirim ke semua user di room tersebutaaa
         io.to(chatRoomId).emit("receiveMessage", newMessage);
     });
 
