@@ -17,7 +17,7 @@ require("dotenv").config();
 const connectMongoDB = require("./config/monggoDB");
 const MySQLStore = require("express-mysql-session")(session);
 const PORT = process.env.PORT || 5000;
-
+//cek autodeploy
 // Koneksi ke MongoDB (untuk chat)
 connectMongoDB();
 
