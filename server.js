@@ -25,7 +25,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:59213", "https://berework-production.up.railway.app", "http://10.0.2.2"],
+        origin: ["http://localhost:59213", "https://berework-production.up.railway.app", "http://10.0.2.2","http://20.192.11.191:5000"],
         methods: ["GET", "POST"],
     },
 });
