@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Deploy via SSH
@@ -20,8 +20,22 @@ jobs:
           username: fharlup  # Replace with your actual username
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            echo "🔄 Navigating to project folder..."
             cd /home/fharlup/berework  # Ensure this is correct
+
+            echo "🔄 Pulling latest code..."
             git pull origin main
+
+            echo "📦 Installing dependencies..."
             npm install
-            pm2 restart my-backend || pm2 start server.js --name my-backend
+
+            echo "🛑 Stopping existing PM2 process (if running)..."
+            pm2 stop my-backend || true
+            pm2 delete my-backend || true
+
+            echo "🚀 Starting PM2 process..."
+            pm2 start server.js --name my-backend
+
+            echo "💾 Saving PM2 process..."
             pm2 save
+            pm2 list
