@@ -204,7 +204,6 @@ exports.leaveCommunity = async (req, res) => {
     }
     
 };
-
 exports.getJoinedCommunities = async (req, res) => {
     try {
         const userId = req.session.userId; // Pastikan userId diambil dari sesi autentikasi
@@ -229,6 +228,7 @@ exports.getJoinedCommunities = async (req, res) => {
         res.status(500).json({ message: "Error fetching joined communities", error });
     }
 };
+
 
 exports.getCommunityReplies = async (req, res) => {
     try {

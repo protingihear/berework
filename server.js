@@ -39,7 +39,7 @@ app.use(express.json());
 app.use(
     cors({
         credentials: true,
-        origin: ["http://localhost:50498", "https://berework-production.up.railway.app", "http://10.0.2.2"],
+        origin: ["http://localhost:50498", "https://berework-production.up.railway.app", "berework-production-1c3d.up.railway.app","http://10.0.2.2"],
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
     })
