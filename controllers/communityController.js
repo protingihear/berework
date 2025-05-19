@@ -349,20 +349,20 @@ exports.createReply = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan saat membuat reply", error });
     }
     // Ambil semua post yang pernah di-like oleh user
-
+}
+// ✅ Ambil semua post yang pernah di-like oleh user
 exports.getPostsLikedByUser = async (req, res) => {
     try {
-        const userId = req.session.userId; // Ambil userId dari session
+        const userId = req.session.userId;
 
         if (!userId) {
             return res.status(401).json({ message: "Silakan login terlebih dahulu" });
         }
 
-        // Cari semua like dari user terhadap post (bukan reply)
         const likedPosts = await CommunityLike.findAll({
             where: {
                 userId,
-                postId: { [require("sequelize").Op.ne]: null } // Pastikan hanya yang postId, bukan reply
+                postId: { [require("sequelize").Op.ne]: null }
             },
             include: [
                 {
@@ -390,10 +390,7 @@ exports.getPostsLikedByUser = async (req, res) => {
             ]
         });
 
-        // Ekstrak post-nya saja
-        const posts = likedPosts
-            .map(like => like.post)
-            .filter(post => post); // filter null just in case
+        const posts = likedPosts.map(like => like.post).filter(post => post);
 
         res.json({
             message: "Daftar post yang Anda like",
@@ -408,4 +405,5 @@ exports.getPostsLikedByUser = async (req, res) => {
     }
 };
 
-};
+
+
