@@ -19,14 +19,13 @@ const User = sequelize.define('User', {
         defaultValue: 'Laki-Laki',
     },
     Image: {
-    type: DataTypes.LONGTEXT,
-    allowNull: true,
-},
-sertif: {
-    type: DataTypes.LONGTEXT,
-    allowNull: true,
-},
-  
+        type: DataTypes.LONGTEXT, // ini base64
+        allowNull: true,
+    },
+    sertif: {
+        type: DataTypes.LONGTEXTTEXT, // ini base64
+        allowNull: true,
+    },
     akunaktif: {
         type: DataTypes.BOOLEAN,
         allowNull: true,
