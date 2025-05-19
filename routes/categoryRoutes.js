@@ -20,5 +20,5 @@ router.put("/api/subcategories/:id/status", categoryController.updateSubCategory
 router.get("/api/categories/:id/progress", categoryController.getCategoryProgress);
 
 router.put("/api/subcategories/:id/status", categoryController.updateSubCategoryStatus);
-
+router.get("/api/posts/liked", communityController.getPostsLikedByUser);
 module.exports = router;

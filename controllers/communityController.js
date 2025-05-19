@@ -348,4 +348,50 @@ exports.createReply = async (req, res) => {
         console.error("Error creating reply:", error);
         res.status(500).json({ message: "Terjadi kesalahan saat membuat reply", error });
     }
+    // Ambil semua post yang pernah di-like oleh user
+exports.getPostsLikedByUser = async (req, res) => {
+  try {
+    const userId = req.session.userId; // userId dari sesi
+
+    if (!userId) {
+      return res.status(401).json({ message: "User belum login" });
+    }
+
+    // Cari semua like oleh user ini yang terkait dengan post (bukan reply)
+    const likedPosts = await CommunityPost.findAll({
+      include: [
+        {
+          model: CommunityLike,
+          as: "likes",
+          where: { userId }, // Filter like yang dari user ini
+          attributes: [], // Tidak perlu atribut like
+        },
+        {
+          model: User,
+          as: "author",
+          attributes: ["id", "username"], // Info pembuat post
+        },
+        {
+          model: CommunityReply,
+          as: "replies",
+          attributes: ["id", "content", "userId", "createdAt"],
+          include: [
+            {
+              model: User,
+              as: "author",
+              attributes: ["id", "username"],
+            },
+          ],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json({ message: "Posts liked by user", posts: likedPosts });
+  } catch (error) {
+    console.error("Error fetching liked posts:", error);
+    res.status(500).json({ message: "Error fetching liked posts", error });
+  }
+};
+
 };
