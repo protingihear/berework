@@ -405,5 +405,45 @@ exports.getPostsLikedByUser = async (req, res) => {
     }
 };
 
+exports.getMyPosts = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "User belum login" });
+    }
 
+    const posts = await CommunityPost.findAll({
+      where: { userId },
+      include: [
+        {
+          model: Community,
+          as: "community",
+          attributes: ["id", "name"]
+        },
+        {
+          model: CommunityReply,
+          as: "replies",
+          attributes: ["id", "content", "userId", "createdAt"],
+          include: [
+            {
+              model: User,
+              as: "author",
+              attributes: ["id", "username"]
+            }
+          ]
+        },
+        {
+          model: CommunityLike,
+          as: "likes",
+          attributes: ["id", "userId"]
+        }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
 
+    res.status(200).json({ message: "Posts by user fetched", posts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching user's posts", error: error.message });
+  }
+};

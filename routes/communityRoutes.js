@@ -41,5 +41,6 @@ router.get("/api/communities/:id/replies", communityController.getCommunityRepli
 router.post("/api/communities/:id/posts/:postId/likes", authMiddleware, communityController.likeContent);
 //router.get("/api/communities/posts/liked", authMiddleware, communityController.getPostsLikedByUser)
 router.get("/api/communities/posts/liked", authMiddleware, communityController.getPostsLikedByUser);
+router.get("/api/posts/mine", authMiddleware, communityController.getMyPosts);
 
 module.exports = router;
