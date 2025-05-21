@@ -46,59 +46,64 @@ exports.getUserProfile = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
-        if (!req.session.userId || !req.cookies.session_id) {
+        const sessionUserId = req.session.userId;
+        const sessionCookie = req.cookies.session_id;
+
+        // Validasi autentikasi
+        if (!sessionUserId || !sessionCookie) {
             return res.status(401).json({ message: "Not authenticated" });
         }
 
-        // Cek apakah user ada di database
-        const user = await User.findByPk(req.session.userId);
+        const user = await User.findByPk(sessionUserId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
         const { firstname, lastname, email, username, password, role, bio, gender } = req.body;
-        const Image = req.file ? req.file.buffer.toString("base64") : (req.body.Image === "" ? null : undefined);
 
-        
-        
-        // Siapkan updateFields hanya jika nilainya berubah
+        // Handle gambar dari req.file atau reset ("" berarti hapus gambar)
+        let imageBase64;
+        if (req.file) {
+            imageBase64 = req.file.buffer.toString("base64");
+        } else if (req.body.Image === "") {
+            imageBase64 = null;
+        }
+
         const updateFields = {};
+
+        // Perbarui hanya jika ada perubahan
         if (firstname && firstname !== user.firstname) updateFields.firstname = firstname;
         if (lastname && lastname !== user.lastname) updateFields.lastname = lastname;
         if (email && email !== user.email) updateFields.email = email;
         if (username && username !== user.username) updateFields.username = username;
-        if (bio && bio !== user.bio) updateFields.bio = bio;
         if (role && role !== user.role) updateFields.role = role;
+        if (bio && bio !== user.bio) updateFields.bio = bio;
         if (gender && gender !== user.gender) updateFields.gender = gender;
-        if (Image !== undefined) {
-            updateFields.Image = Image;
-        }
-        // Hash password jika ada dan berbeda
+        if (imageBase64 !== undefined) updateFields.Image = imageBase64;
+
+        // Handle password jika dikirim dan berbeda
         if (password && password.trim() !== "") {
             if (password.length < 6) {
                 return res.status(400).json({ message: "Password must be at least 6 characters long" });
             }
-            const hashedPassword = await bcrypt.hash(password, 10);
-            if (hashedPassword !== user.password) {
-                updateFields.password = hashedPassword;
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (!passwordMatch) {
+                updateFields.password = await bcrypt.hash(password, 10);
             }
         }
 
-        // Jika tidak ada perubahan, kembalikan response
         if (Object.keys(updateFields).length === 0) {
             return res.status(400).json({ message: "No changes made" });
         }
 
-        // Update user
-        await User.update(updateFields, { where: { id: req.session.userId } });
+        await User.update(updateFields, { where: { id: sessionUserId } });
+        return res.json({ message: "Profile updated successfully" });
 
-        res.json({ message: "Profile updated successfully" });
     } catch (error) {
         console.error("Error updating profile:", error);
-        res.status(500).json({ message: "Error updating profile", error: error.message });
+        return res.status(500).json({ message: "Error updating profile", error: error.message });
     }
 };
-
 exports.deleteUser = async (req, res) => {
     try {
         if (!req.session.userId || !req.cookies.session_id) {
