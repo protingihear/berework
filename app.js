@@ -3,7 +3,7 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const sequelize = require("./config/database");
-
+const bodyParser = require('body-parser');
 require("dotenv").config();
 const connectMongoDB = require("./config/monggoDB");
 const MySQLStore = require("express-mysql-session")(session);
@@ -59,5 +59,7 @@ app.use("/api/berita", beritaRoutes);
 app.use("/", kategoriRoutes);
 app.use("/", communityRoutes);
 app.use("/", chatRoutes);
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 module.exports = app; // ⚠️ Penting agar supertest bisa pakai ini

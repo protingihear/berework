@@ -11,8 +11,9 @@ router.post('/register', upload.single("Image"), AuthController.register);
 router.post('/login', AuthController.login);
 router.get('/session', AuthController.getSession);
 
-// 🔐 Tambahan: Forgot & Reset Password
+// Forgot & Reset Password
 router.post('/forgot-password', AuthController.forgotPassword);
-router.post('/reset-password', AuthController.resetPassword);
+router.get('/reset-password', AuthController.showResetPasswordForm); // GET untuk tampilkan form
+router.post('/reset-password', AuthController.resetPassword);        // POST untuk kirim password baru
 
 module.exports = router;
