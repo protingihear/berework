@@ -135,6 +135,30 @@ exports.likeContent = async (req, res) => {
         res.status(500).json({ message: "Error liking content", error });
     }
 };
+exports.unlikeContent = async (req, res) => {
+  const { postId, replyId } = req.body;  // ambil dari body, sama dengan likeContent
+  const userId = req.session.userId;    // ambil dari session, sama dengan likeContent
+
+  try {
+    const whereClause = { userId };
+
+    if (postId !== undefined) whereClause.postId = postId;
+    if (replyId !== undefined) whereClause.replyId = replyId;
+
+    const deleted = await CommunityLike.destroy({
+      where: whereClause,
+    });
+
+    if (deleted === 0) {
+      return res.status(404).json({ message: "Like tidak ditemukan." });
+    }
+
+    res.status(200).json({ message: "Berhasil unlike." });
+  } catch (error) {
+    console.error("Gagal unlike:", error);
+    res.status(500).json({ message: "Terjadi kesalahan di server." });
+  }
+};
 
 // ✅ Ambil semua komunitas
 exports.getCommunities = async (req, res) => {
@@ -407,9 +431,10 @@ exports.getPostsLikedByUser = async (req, res) => {
 
 exports.getMyPosts = async (req, res) => {
   try {
-    const userId = req.session.userId;
+    const userId = req.session.userId; // ambil userId dari session
+
     if (!userId) {
-      return res.status(401).json({ message: "User belum login" });
+      return res.status(401).json({ message: "User not authenticated" });
     }
 
     const posts = await CommunityPost.findAll({
@@ -417,33 +442,15 @@ exports.getMyPosts = async (req, res) => {
       include: [
         {
           model: Community,
-          as: "community",
-          attributes: ["id", "name"]
-        },
-        {
-          model: CommunityReply,
-          as: "replies",
-          attributes: ["id", "content", "userId", "createdAt"],
-          include: [
-            {
-              model: User,
-              as: "author",
-              attributes: ["id", "username"]
-            }
-          ]
-        },
-        {
-          model: CommunityLike,
-          as: "likes",
-          attributes: ["id", "userId"]
+          as: "community", // pastikan alias ini sama dengan yang didefinisikan di asosiasi model
+          attributes: ["id", "name", "description"] // sesuaikan field yang ingin ditampilkan
         }
       ],
       order: [["createdAt", "DESC"]]
     });
 
-    res.status(200).json({ message: "Posts by user fetched", posts });
+    res.json({ posts });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error fetching user's posts", error: error.message });
+    res.status(500).json({ message: "Error fetching user's posts", error });
   }
 };

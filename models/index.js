@@ -15,43 +15,41 @@ const UserSubCategoryProgress = require("./UserSubCategoryProgress");
 
 // ✅ Define Relationships in a Single Section
 (() => {
-    // 🔹 User & Community Relationship
+    // User & Community Relationship
     User.hasMany(Community, { foreignKey: "creatorId", as: "createdCommunities" });
     Community.belongsTo(User, { foreignKey: "creatorId", as: "creator" });
 
-    // 🔹 Many-to-Many: User & Community
+    // Many-to-Many: User & Community
     User.belongsToMany(Community, { through: CommunityMember, foreignKey: "userId", as: "joinedCommunities" });
     Community.belongsToMany(User, { through: CommunityMember, foreignKey: "communityId", as: "communityMembers" });
 
-    // 🔹 Community & Post Relationship
-    Community.hasMany(CommunityPost, { foreignKey: 'communityId', onDelete: 'CASCADE' });
-    CommunityPost.belongsTo(Community, { foreignKey: 'communityId' });
+    // Community & Post Relationship
+    Community.hasMany(CommunityPost, { foreignKey: 'communityId', as: 'posts', onDelete: 'CASCADE' });
+    CommunityPost.belongsTo(Community, { foreignKey: 'communityId', as: 'community' });
 
-    // 🔹 User & Post Relationship
+    // User & Post Relationship
     User.hasMany(CommunityPost, { foreignKey: "userId", as: "posts" });
     CommunityPost.belongsTo(User, { foreignKey: "userId", as: "author" });
 
-    // 🔹 Post & Reply Relationship (One-to-Many)
+    // Post & Reply Relationship (One-to-Many)
     CommunityPost.hasMany(CommunityReply, { foreignKey: "postId", as: "replies" });
     CommunityReply.belongsTo(CommunityPost, { foreignKey: "postId", as: "post" });
 
-
-    // 🔹 Reply & User Relationship
+    // Reply & User Relationship
     CommunityReply.belongsTo(User, { foreignKey: "userId", as: "author" });
     
-    // 🔹 Nested Reply (Reply within Reply)
+    // Nested Reply (Reply within Reply)
     CommunityReply.hasMany(CommunityReply, { foreignKey: "replyId", as: "subReplies" });
     CommunityReply.belongsTo(CommunityReply, { foreignKey: "replyId", as: "parentReply" });
 
-    // 🔹 Many-to-Many: User & Post Likes
+    // Many-to-Many: User & Post Likes
     User.belongsToMany(CommunityPost, { through: CommunityLike, foreignKey: "userId", as: "likedPosts" });
     CommunityPost.belongsToMany(User, { through: CommunityLike, foreignKey: "postId", as: "postLikers" });
 
-    // 🔹 Many-to-Many: User & Reply Likes
+    // Many-to-Many: User & Reply Likes
     User.belongsToMany(CommunityReply, { through: CommunityLike, foreignKey: "userId", as: "likedReplies" });
     CommunityReply.belongsToMany(User, { through: CommunityLike, foreignKey: "replyId", as: "replyLikers" });
 })();
-
 // ✅ Sync Database
 const syncDatabase = async () => {
     try {

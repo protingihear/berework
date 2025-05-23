@@ -12,6 +12,10 @@ router.put("/api/communities/:id", authMiddleware, communityController.editCommu
 
 // ✅ Dapatkan semua komunitas
 router.get("/api/communities", communityController.getCommunities);
+//likes
+router.post("/api/communities/:id/posts/:postId/likes", authMiddleware, communityController.likeContent);
+//unlike
+router.delete("/api/communities/:id/posts/:postId/likes", authMiddleware, communityController.unlikeContent);
 
 // ✅ Dapatkan komunitas berdasarkan ID
 router.get("/api/communities/:id", communityController.getCommunityById);
@@ -33,7 +37,7 @@ router.get("/api/communities/:id/posts", communityController.getCommunityPosts);
 
 // ✅ Balas postingan atau reply lain dalam komunitas (wajib login)
 router.post("/api/communities/:id/posts/:postId/replies", authMiddleware, communityController.createReply);
-
+//
 // ✅ Ambil semua balasan dalam komunitas
 router.get("/api/communities/:id/replies", communityController.getCommunityReplies);
 
