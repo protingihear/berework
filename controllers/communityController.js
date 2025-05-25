@@ -124,17 +124,40 @@ exports.createReply = async (req, res) => {
 
 // ✅ Like post atau reply
 exports.likeContent = async (req, res) => {
-    try {
-        const { postId, replyId } = req.body;
-        const userId = req.session.userId; // Gunakan session untuk userId
+  try {
+    const userId = req.session.userId;
+    const postId = req.params.postId;
 
-        await CommunityLike.create({ userId, postId, replyId });
-
-        res.json({ message: "Liked successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Error liking content", error });
+    if (!postId || !userId) {
+      return res.status(400).json({ message: "postId and user session are required" });
     }
+
+    // cek apakah user sudah like postingan ini
+    const post = await CommunityPost.findByPk(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    let likedBy = [];
+    if (post.likedBy) {
+      likedBy = JSON.parse(post.likedBy);  // convert string to array
+    }
+
+    if (likedBy.includes(userId)) {
+      return res.status(400).json({ message: "You already liked this post" });
+    }
+
+    likedBy.push(userId);
+    post.likedBy = JSON.stringify(likedBy);
+    post.likeCount = likedBy.length;
+    await post.save();
+
+    return res.json({ message: "Liked successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error liking content", error: error.message });
+  }
 };
+
 exports.unlikeContent = async (req, res) => {
   const { postId, replyId } = req.body;  // ambil dari body, sama dengan likeContent
   const userId = req.session.userId;    // ambil dari session, sama dengan likeContent

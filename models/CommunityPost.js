@@ -21,14 +21,42 @@ const CommunityPost = sequelize.define("CommunityPost", {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: Community, // 🔹 Tambahin ini biar Sequelize paham relasinya
+            model: Community,
             key: "id"
         }
     },
     content: {
         type: DataTypes.TEXT,
         allowNull: false
+    },
+    likedBy: {
+        type: DataTypes.JSON, // Array of user IDs who liked the post
+        allowNull: false,
+        defaultValue: []
+    }
+}, {
+    getterMethods: {
+        likeCount() {
+            return this.likedBy?.length || 0;
+        }
     }
 });
 
+// Virtual method to set likedByMe for current user
+CommunityPost.prototype.setLikedByMe = function(userId) {
+    const liked = this.likedBy.includes(userId);
+    this.setDataValue('likedByMe', liked ? 'yes' : 'no');
+};
+
+// Optional: to expose likedByMe in toJSON (e.g. for API response)
+CommunityPost.prototype.toJSON = function () {
+    const values = Object.assign({}, this.get());
+    if (this.dataValues.likedByMe) {
+        values.likedByMe = this.dataValues.likedByMe;
+    }
+    values.likeCount = this.likeCount;
+    return values;
+};
+
 module.exports = CommunityPost;
+

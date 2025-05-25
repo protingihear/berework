@@ -13,7 +13,7 @@ router.put("/api/communities/:id", authMiddleware, communityController.editCommu
 // ✅ Dapatkan semua komunitas
 router.get("/api/communities", communityController.getCommunities);
 //likes
-router.post("/api/communities/:id/posts/:postId/likes", authMiddleware, communityController.likeContent);
+router.post("/api/communities/:id/likes", authMiddleware, communityController.likeContent);
 //unlike
 router.delete("/api/communities/:id/posts/:postId/likes", authMiddleware, communityController.unlikeContent);
 

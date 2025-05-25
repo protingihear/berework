@@ -22,7 +22,6 @@ const PORT = process.env.PORT || 5000;
 //plis bisa
 //cihuy
 // Koneksi ke MongoDB (untuk chat)
-connectMongoDB();
 
 const app = express();
 const server = http.createServer(app);
