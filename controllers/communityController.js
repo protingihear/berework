@@ -1,5 +1,40 @@
 const { Community, CommunityMember, CommunityPost, CommunityReply, CommunityLike, User } = require("../models");
 // ✅ Buat komunitas
+async function resetLikedByField() {
+  try {
+    const posts = await CommunityPost.findAll();
+
+    for (const post of posts) {
+      let likedBy = post.likedBy;
+
+      let isInvalid = false;
+      if (!likedBy) {
+        isInvalid = true;
+      } else if (!Array.isArray(likedBy)) {
+        try {
+          likedBy = JSON.parse(likedBy);
+          if (!Array.isArray(likedBy)) {
+            isInvalid = true;
+          }
+        } catch {
+          isInvalid = true;
+        }
+      }
+
+      if (isInvalid) {
+        post.likedBy = [];
+        await post.save();
+        console.log(`Reset likedBy for post id ${post.id}`);
+      }
+    }
+    console.log('Reset likedBy selesai.');
+  } catch (err) {
+    console.error('Error reset likedBy:', err);
+  }
+}
+
+// Jalankan fungsi
+resetLikedByField();
 exports.createCommunity = async (req, res) => {
     try {
         const { name, description } = req.body;
@@ -123,6 +158,7 @@ exports.createReply = async (req, res) => {
 };
 
 // ✅ Like post atau reply
+
 exports.likeContent = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -132,24 +168,32 @@ exports.likeContent = async (req, res) => {
       return res.status(400).json({ message: "postId and user session are required" });
     }
 
-    // cek apakah user sudah like postingan ini
+    // Cari postingan
     const post = await CommunityPost.findByPk(postId);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    let likedBy = [];
-    if (post.likedBy) {
-      likedBy = JSON.parse(post.likedBy);  // convert string to array
+    // Pastikan likedBy selalu array
+    let likedBy;
+    try {
+      likedBy = Array.isArray(post.likedBy) ? post.likedBy : JSON.parse(post.likedBy || '[]');
+    } catch {
+      likedBy = [];
     }
 
-    if (likedBy.includes(userId)) {
+    // Convert userId ke string (untuk perbandingan konsisten)
+    const userIdStr = String(userId);
+    const likedByStr = likedBy.map(String);
+
+    // Cek user sudah like atau belum
+    if (likedByStr.includes(userIdStr)) {
       return res.status(400).json({ message: "You already liked this post" });
     }
 
     likedBy.push(userId);
-    post.likedBy = JSON.stringify(likedBy);
-    post.likeCount = likedBy.length;
+    post.likedBy = likedBy;
+
     await post.save();
 
     return res.json({ message: "Liked successfully" });
@@ -158,28 +202,83 @@ exports.likeContent = async (req, res) => {
   }
 };
 
+  
 exports.unlikeContent = async (req, res) => {
-  const { postId, replyId } = req.body;  // ambil dari body, sama dengan likeContent
-  const userId = req.session.userId;    // ambil dari session, sama dengan likeContent
-
   try {
-    const whereClause = { userId };
+    const userId = req.session.userId;
+    const postId = req.params.postId;
 
-    if (postId !== undefined) whereClause.postId = postId;
-    if (replyId !== undefined) whereClause.replyId = replyId;
-
-    const deleted = await CommunityLike.destroy({
-      where: whereClause,
-    });
-
-    if (deleted === 0) {
-      return res.status(404).json({ message: "Like tidak ditemukan." });
+    if (!postId || !userId) {
+      return res.status(400).json({ message: "postId and user session are required" });
     }
 
-    res.status(200).json({ message: "Berhasil unlike." });
+    const post = await CommunityPost.findByPk(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    let likedBy;
+    try {
+      likedBy = Array.isArray(post.likedBy) ? post.likedBy : JSON.parse(post.likedBy || '[]');
+    } catch {
+      likedBy = [];
+    }
+
+    const userIdStr = String(userId);
+    const likedByStr = likedBy.map(String);
+
+    if (!likedByStr.includes(userIdStr)) {
+      return res.status(400).json({ message: "You have not liked this post" });
+    }
+
+    // Filter hapus userId dari array likedBy
+    const newLikedBy = likedBy.filter(id => String(id) !== userIdStr);
+
+    post.likedBy = newLikedBy;
+    await post.save();
+
+    return res.json({ message: "Unliked successfully" });
   } catch (error) {
-    console.error("Gagal unlike:", error);
-    res.status(500).json({ message: "Terjadi kesalahan di server." });
+    return res.status(500).json({ message: "Error unliking content", error: error.message });
+  }
+};
+exports.unlikeContent = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const postId = req.params.postId;
+
+    if (!postId || !userId) {
+      return res.status(400).json({ message: "postId and user session are required" });
+    }
+
+    const post = await CommunityPost.findByPk(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    let likedBy;
+    try {
+      likedBy = Array.isArray(post.likedBy) ? post.likedBy : JSON.parse(post.likedBy || '[]');
+    } catch {
+      likedBy = [];
+    }
+
+    const userIdStr = String(userId);
+    const likedByStr = likedBy.map(String);
+
+    if (!likedByStr.includes(userIdStr)) {
+      return res.status(400).json({ message: "You have not liked this post" });
+    }
+
+    // Filter hapus userId dari array likedBy
+    const newLikedBy = likedBy.filter(id => String(id) !== userIdStr);
+
+    post.likedBy = newLikedBy;
+    await post.save();
+
+    return res.json({ message: "Unliked successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error unliking content", error: error.message });
   }
 };
 
