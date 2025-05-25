@@ -30,7 +30,7 @@ jobs:
             npm install
 
             echo "🚀 Restarting PM2 process..."
-            pm2 restart tumbuhsehat || pm2 start server.js --name tumbuhsehat
+            pm2 restart berework || pm2 start server.js --name berework
 
             echo "💾 Saving PM2 process..."
             pm2 save
