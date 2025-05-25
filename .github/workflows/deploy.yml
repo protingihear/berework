@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main  # Change this if needed
+      - main  # Sesuaikan kalau branch kamu beda
 
 jobs:
   deploy:
@@ -17,11 +17,11 @@ jobs:
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.SERVER_IP }}
-          username: ihear_main  # Replace with your actual username
+          username: azureuser         # Ganti kalau username VPS kamu bukan ini
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "🔄 Navigating to project folder..."
-            cd /home/fharlup/berework  # Ensure this is correct
+            cd /home/azureuser/berework
 
             echo "🔄 Pulling latest code..."
             git pull origin main
@@ -29,12 +29,8 @@ jobs:
             echo "📦 Installing dependencies..."
             npm install
 
-            echo "🛑 Stopping existing PM2 process (if running)..."
-            pm2 stop my-backend || true
-            pm2 delete my-backend || true
-
-            echo "🚀 Starting PM2 process..."
-            pm2 start server.js --name my-backend
+            echo "🚀 Restarting PM2 process..."
+            pm2 restart tumbuhsehat || pm2 start server.js --name tumbuhsehat
 
             echo "💾 Saving PM2 process..."
             pm2 save
