@@ -78,7 +78,7 @@ exports.forgotPassword = async (req, res) => {
         if (!user) return res.status(404).json({ message: "Email tidak ditemukan" });
 
         const token = jwt.sign({ id: user.id }, 'SECRET_KEY', { expiresIn: '15m' });
-        const resetLink = `http://localhost:5000/auth/reset-password?token=${token}`;
+        const resetLink = `https://berework-production-ad0a.up.railway.app/auth/reset-password?token=${token}`;
 
         await transporter.sendMail({
             from: 'fajarmufid01@gmail.com',
