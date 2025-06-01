@@ -16,7 +16,7 @@ const chatRoutes = require("./routes/chat/chatRoutes"); // Tambahkan route chat
 require("dotenv").config();
 const connectMongoDB = require("./config/monggoDB");
 const MySQLStore = require("express-mysql-session")(session);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 //cek autodeploy
 //cek lagi
 //plis bisa
