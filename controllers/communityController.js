@@ -578,3 +578,61 @@ exports.getMyPosts = async (req, res) => {
     res.status(500).json({ message: "Error fetching user's posts", error });
   }
 };
+// Di dalam file controllers/communityController.js
+
+// ... (fungsi controller lainnya)
+
+// ✅ Ambil semua anggota dari sebuah komunitas
+exports.getCommunityMembers = async (req, res) => {
+ try {
+     // Ambil ID komunitas dari parameter URL
+    const { id } = req.params;
+    
+    // Cek dulu apakah komunitasnya ada untuk memberikan pesan error yang jelas
+    const community = await Community.findByPk(id);
+if (!community) {
+    return res.status(404).json({ message: "Community not found" });
+     }
+    
+const members = await community.getCommunityMembers({
+    // Pilih atribut user yang ingin ditampilkan agar tidak mengirim data sensitif seperti password
+     attributes: ["id", "username"], 
+    joinTableAttributes: [] // Tidak perlu menampilkan info dari tabel CommunityMember
+    });
+    
+    res.status(200).json({
+    message: `Daftar anggota komunitas '${community.name}'`,
+     members
+    });
+    
+     } catch (error) {
+    console.error("Error fetching community members:", error);
+     res.status(500).json({ 
+   message: "Terjadi kesalahan saat mengambil data anggota komunitas", 
+         error: error.message 
+   });
+     }
+    };
+exports.leaveCommunity = async (req, res) => {
+ try {
+        // Mengambil ID komunitas dari URL, contoh: /api/communities/45/leave
+ const { id } = req.params; 
+        // Mengambil ID user dari sesi login
+const userId = req.session.userId; 
+
+        // Mencari data keanggotaan yang spesifik untuk user dan komunitas ini
+ const membership = await CommunityMember.findOne({ where: { userId, communityId: id } });
+
+        // Jika tidak ada, berarti user memang bukan anggota
+ if (!membership) {
+return res.status(404).json({ message: "You are not a member of this community" });
+ }
+
+        // Menghapus data keanggotaan dari tabel CommunityMember
+await membership.destroy();
+
+ res.json({ message: "Successfully left the community" });
+ } catch (error) {
+ res.status(500).json({ message: "Error leaving community", error });
+}
+};
