@@ -352,26 +352,28 @@ exports.leaveCommunity = async (req, res) => {
 };
 exports.getJoinedCommunities = async (req, res) => {
     try {
-        const userId = req.session.userId; // Pastikan userId diambil dari sesi autentikasi
+        const userId = req.session.userId;
 
         if (!userId) {
             return res.status(401).json({ message: "User ID tidak ditemukan, silakan login" });
         }
 
-        // Cari semua komunitas yang diikuti oleh user
-        const joinedCommunities = await Community.findAll({
-            include: {
-                model: CommunityMember,
-                as: "members",  // Sesuai dengan relasi yang didefinisikan di atas
-                where: { userId },
-                attributes: []  // Hanya mengambil data Community, bukan CommunityMember
-            }
+        // Cari semua komunitas yang memiliki user dengan ID ini sebagai anggotanya
+        const communities = await Community.findAll({
+            include: [{
+                model: User,                // Include model User
+                as: "communityMembers",     // Gunakan alias yang didefinisikan di Community.belongsToMany(User, { as: "communityMembers" })
+                where: { id: userId },      // Filter berdasarkan ID user
+                attributes: [],             // Kita tidak butuh atribut dari User di hasil akhir, hanya untuk join
+                through: { attributes: [] } // Kita juga tidak butuh atribut dari tabel perantara (CommunityMember)
+            }]
         });
 
-        res.json({ message: "Daftar komunitas yang diikuti", joinedCommunities });
+        res.json({ message: "Daftar komunitas yang diikuti", joinedCommunities: communities });
+
     } catch (error) {
         console.error("Error fetching joined communities:", error);
-        res.status(500).json({ message: "Error fetching joined communities", error });
+        res.status(500).json({ message: "Error fetching joined communities", error: error.message });
     }
 };
 
