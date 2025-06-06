@@ -7,8 +7,15 @@ const router = express.Router();
 
 router.get('/users', authMiddleware, UserController.getAllUsers);
 router.get('/profile', authMiddleware, UserController.getUserProfile);
-router.put('/profile', authMiddleware, upload.single("Image"),upload.single("sertif"), UserController.updateUser);
 router.delete('/profile', authMiddleware, UserController.deleteUser);
+router.put('/profile', 
+    authMiddleware, 
+    upload.fields([
+        { name: 'Image', maxCount: 1 },
+        { name: 'sertif', maxCount: 1 }
+    ]), 
+    UserController.updateUser
+);
 router.put('/validate',authMiddleware,UserController.activateUser);
 router.post('/logout', authMiddleware, UserController.logout);
 
