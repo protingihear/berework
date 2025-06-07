@@ -636,3 +636,32 @@ await membership.destroy();
  res.status(500).json({ message: "Error leaving community", error });
 }
 };
+exports.deleteCommunity = async (req, res) => {
+    try {
+        const { id } = req.params; // Get community ID from URL parameters
+        const userId = req.session.userId; // Get userId from session
+
+        // Find the community by its ID
+        const community = await Community.findByPk(id);
+
+        // If community not found, return 404
+        if (!community) {
+            return res.status(404).json({ message: "Community not found" });
+        }
+
+        // Check if the authenticated user is the creator of the community
+        if (community.creatorId !== userId) {
+            return res.status(403).json({ message: "Unauthorized: You are not the creator of this community" });
+        }
+
+        // Delete the community
+        await community.destroy();
+
+        // Return a success message
+        res.status(200).json({ message: "Community deleted successfully" });
+
+    } catch (error) {
+        console.error("Error deleting community:", error);
+        res.status(500).json({ message: "Error deleting community", error: error.message });
+    }
+};
