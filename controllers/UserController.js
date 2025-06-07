@@ -50,45 +50,51 @@ exports.updateUser = async (req, res) => {
         // 1. Validasi Autentikasi
         const sessionUserId = req.session.userId;
         if (!sessionUserId) {
-            return res.status(401).json({ message: "Not authenticated" });
+            return res.status(401).json({ message: "Tidak terautentikasi" });
         }
 
         // 2. Cari User di Database
         const user = await User.findByPk(sessionUserId);
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "Pengguna tidak ditemukan" });
         }
 
-        // 3. Siapkan Data dari Request
+        // 3. Siapkan Data dari Request untuk Pembaruan Parsial
         const { firstname, lastname, email, username, password, role, bio, gender } = req.body;
         const updateFields = {};
 
-        // 4. Kumpulkan Field Teks yang Ingin Di-update
-        if (firstname) updateFields.firstname = firstname;
-        if (lastname) updateFields.lastname = lastname;
-        if (email) updateFields.email = email;
-        if (username) updateFields.username = username;
-        if (role) updateFields.role = role;
-        if (bio) updateFields.bio = bio;
-        if (gender) updateFields.gender = gender;
+        // 4. Kumpulkan Field Teks yang Ingin Di-update (jika disediakan)
+        if (firstname !== undefined) updateFields.firstname = firstname;
+        if (lastname !== undefined) updateFields.lastname = lastname;
+        if (email !== undefined) updateFields.email = email;
+        if (username !== undefined) updateFields.username = username;
+        if (role !== undefined) updateFields.role = role;
+        if (bio !== undefined) updateFields.bio = bio;
+        if (gender !== undefined) updateFields.gender = gender;
 
-        // 5. Kumpulkan Field File yang Di-update (Bagian yang Diperbaiki)
+        // 5. Tangani Field File: 'Image' dan 'sertif' (keduanya dari req.files)
+        // Untuk 'Image': Multer menyediakannya di req.files['Image']
         if (req.files && req.files['Image']) {
             updateFields.Image = req.files['Image'][0].buffer.toString("base64");
-        } else if (req.body.Image === "") {
+        } else if (req.body.Image === "") { // Jika client mengirim string kosong, set null
             updateFields.Image = null;
         }
+        // Jika tidak ada file 'Image' baru diupload DAN req.body.Image bukan string kosong,
+        // maka field 'Image' di database tidak akan diubah.
 
+        // Untuk 'sertif': Multer menyediakannya di req.files['sertif']
         if (req.files && req.files['sertif']) {
             updateFields.sertif = req.files['sertif'][0].buffer.toString("base64");
-        } else if (req.body.sertif === "") {
+        } else if (req.body.sertif === "") { // Jika client mengirim string kosong, set null
             updateFields.sertif = null;
         }
+        // Jika tidak ada file 'sertif' baru diupload DAN req.body.sertif bukan string kosong,
+        // maka field 'sertif' di database tidak akan diubah.
 
-        // 6. Handle Update Password
+        // 6. Tangani Pembaruan Kata Sandi
         if (password && password.trim() !== "") {
             if (password.length < 6) {
-                return res.status(400).json({ message: "Password must be at least 6 characters long" });
+                return res.status(400).json({ message: "Kata sandi minimal 6 karakter" });
             }
 
             const passwordMatch = await bcrypt.compare(password, user.password);
@@ -99,19 +105,18 @@ exports.updateUser = async (req, res) => {
 
         // 7. Cek Jika Tidak Ada Perubahan Sama Sekali
         if (Object.keys(updateFields).length === 0) {
-            return res.status(400).json({ message: "No changes made" });
+            return res.status(400).json({ message: "Tidak ada perubahan yang dibuat" });
         }
 
         // 8. Lakukan Update ke Database
         await User.update(updateFields, { where: { id: sessionUserId } });
-        return res.json({ message: "Profile updated successfully" });
+        return res.json({ message: "Profil berhasil diperbarui" });
 
     } catch (error) {
-        console.error("Error updating profile:", error);
-        return res.status(500).json({ message: "Error updating profile", error: error.message });
+        console.error("Error memperbarui profil:", error);
+        return res.status(500).json({ message: "Error memperbarui profil", error: error.message });
     }
 };
-
 exports.deleteUser = async (req, res) => {
     try {
         if (!req.session.userId || !req.cookies.session_id) {
