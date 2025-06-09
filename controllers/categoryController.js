@@ -129,3 +129,38 @@ exports.updateSubCategoryStatus = async (req, res) => {
         res.status(500).json({ message: "Error updating subcategory progress", error });
     }
 };
+exports.updateCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+
+        const category = await Category.findByPk(id);
+        if (!category) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+
+        category.name = name || category.name;
+        await category.save();
+
+        res.json({ message: "Category updated", category });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating category", error });
+    }
+};
+// Delete kategori berdasarkan ID
+exports.deleteCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const category = await Category.findByPk(id);
+        if (!category) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+
+        await category.destroy();
+
+        res.json({ message: "Category deleted" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting category", error });
+    }
+};

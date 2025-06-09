@@ -43,3 +43,44 @@ exports.getSubcategoriesByCategory = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+exports.updateSubcategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, video, description, done } = req.body;
+
+        const subcategory = await Subcategory.findByPk(id);
+        if (!subcategory) {
+            return res.status(404).json({ message: "Subcategory not found" });
+        }
+
+        // Update fields jika ada di request body
+        if (name !== undefined) subcategory.name = name;
+        if (video !== undefined) subcategory.video = video;
+        if (description !== undefined) subcategory.description = description;
+        if (done !== undefined) subcategory.done = done;
+
+        await subcategory.save();
+
+        res.json({ message: "Subcategory updated", subcategory });
+    } catch (error) {
+        console.error("Error updating subcategory:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+exports.deleteSubcategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const subcategory = await Subcategory.findByPk(id);
+        if (!subcategory) {
+            return res.status(404).json({ message: "Subcategory not found" });
+        }
+
+        await subcategory.destroy();
+
+        res.json({ message: "Subcategory deleted" });
+    } catch (error) {
+        console.error("Error deleting subcategory:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
