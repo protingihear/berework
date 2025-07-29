@@ -1,34 +1,44 @@
+
+version: "3.9"
+
 services:
+  mysql:
+    image: mysql:8.4
+    container_name: rewkrokbe_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQLPASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQLUSER}
+      MYSQL_PASSWORD: ${MYSQLPASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - rewkrokbe_net
+
   app:
     build: .
     container_name: rewkrokbe_app
     ports:
-      - "3000:3000"
+      - "5001:5001"
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQLUSER=${MYSQLUSER}
-      - MYSQLPASSWORD=${MYSQLPASSWORD}
-      - MYSQLPORT=3306
-      - MYSQLHOST=mysql
+      - MYSQL_USER=${MYSQLUSER}
+      - MYSQL_PASSWORD=${MYSQLPASSWORD}
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
       - SECRET_KEY=${SECRET_KEY}
       - MONGO_URI=${MONGO_URI}
     depends_on:
       - mysql
-    restart: always
-
-  mysql:
-    image: mysql:8
-    container_name: rewkrokbe_mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword123
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQLUSER}
-      - MYSQL_PASSWORD=${MYSQLPASSWORD}
-    ports:
-      - "5000:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: always
+    restart: on-failure
+    networks:
+      - rewkrokbe_net
 
 volumes:
-  db_data:
+  mysql_data:
+
+networks:
+  rewkrokbe_net:
