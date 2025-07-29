@@ -20,10 +20,10 @@ services:
     image: mysql:8
     container_name: rewkrokbe_mysql
     environment:
-      MYSQL_ROOT_PASSWORD=rootpassword123
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQLUSER}
-      MYSQL_PASSWORD: ${MYSQLPASSWORD}
+      - MYSQL_ROOT_PASSWORD=rootpassword123
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQLUSER}
+      - MYSQL_PASSWORD=${MYSQLPASSWORD}
     ports:
       - "5000:3306"
     volumes:
