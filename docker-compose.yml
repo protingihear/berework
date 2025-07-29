@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    container_name: rewkrokbe_app
+    ports:
+      - "3000:3000"
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQLUSER=${MYSQLUSER}
+      - MYSQLPASSWORD=${MYSQLPASSWORD}
+      - MYSQLPORT=3306
+      - MYSQLHOST=mysql
+      - SECRET_KEY=${SECRET_KEY}
+      - MONGO_URI=${MONGO_URI}
+    volumes:
+      - .:/app
+    depends_on:
+      - mysql
+    restart: always
+
+  mysql:
+    image: mysql:8
+    container_name: rewkrokbe_mysql
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQLUSER}
+      MYSQL_PASSWORD: ${MYSQLPASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQLPASSWORD}
+    ports:
+      - "5000:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+volumes:
+  db_data:

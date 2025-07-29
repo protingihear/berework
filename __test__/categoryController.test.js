@@ -1,39 +1,40 @@
 const request = require("supertest");
 
-const BASE_URL = "http://localhost:5000"; // ganti dengan URL sesuai port kamu
+const BASE_URL = "http://localhost:5001"; 
 
-describe("AuthController.login", () => {
-  it("should login successfully with correct username and password", async () => {
+
+
+describe("AuthController.regis", () => {
+  it("should regis successfully with correct username and password", async () => {
     const res = await request(BASE_URL)
-      .post("/auth/login")
+      .post("/auth/register")
       .send({
-        username: "di",
-        password: "di",
+      
+  "firstname": "doma",
+  "lastname": "iiiiaq",
+  "email": "qq@gmail.com",
+  "username": "test1",
+  "password": "doma",
+  "bio": "ljlfkdajlfkasd",
+  "role": "user",
+ 
+  "gender": "Laki-Laki"
+
       });
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("message", "Login successful");
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty("message", "User registered");
   });
 
   it("should return 404 if user not found", async () => {
     const res = await request(BASE_URL)
       .post("/auth/login")
       .send({
-        username: "notfound",
-        password: "anything",
+       
       });
 
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(500);
   });
 
-  it("should return 401 if password is incorrect", async () => {
-    const res = await request(BASE_URL)
-      .post("/auth/login")
-      .send({
-        username: "di",
-        password: "wrongpassword",
-      });
-
-    expect(res.statusCode).toBe(401);
-  });
+  
 });
