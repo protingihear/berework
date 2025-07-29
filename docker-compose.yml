@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   app:
     build: .
@@ -23,10 +24,10 @@ services:
     image: mysql:8
     container_name: rewkrokbe_mysql
     environment:
+      MYSQL_ROOT_PASSWORD: your_secure_password_here  # ✅ password root yang aman
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQLUSER}
       MYSQL_PASSWORD: ${MYSQLPASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQLPASSWORD}
     ports:
       - "5000:3306"
     volumes:
